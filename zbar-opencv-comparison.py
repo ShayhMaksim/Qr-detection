@@ -5,15 +5,22 @@ import pyzbar.pyzbar as pyzbar
 import math
 import cv2
 import copy
+import pandas as pd
+import time
 
-FX = 7.2125114092664523e+02
+#FX = 7.2125114092664523e+02
+FX = 7.304041689e+02
 SIDE_OF_QR = 45
-ANGLE_FI=24*math.pi/180
-ANGLE_MU=19*math.pi/180
+# ANGLE_FI=24*math.pi/180
+# ANGLE_MU=19*math.pi/180
+ANGLE_FI=45*math.pi/180
+ANGLE_MU=45*math.pi/180
 H_QR = 90
 
-CX=320
-CY=240
+
+
+
+df=pd.DataFrame(columns=['t','x','y','alpha'])
 
 
 class A:
@@ -23,7 +30,11 @@ class A:
 
 cap = cv2.VideoCapture(0)
 hasFrame,frame = cap.read()
-#vid_writer = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
+out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
+CX=frame.shape[1]/2
+CY=frame.shape[0]/2
+
+
 
 # Display barcode and QR code location
 def display(im, decodedObjects):
@@ -80,11 +91,17 @@ def distanceCalculate2(point1,point2,H):
 def getMU(Y):
   return math.atan2(Y-CY,CY)
 
+def getF(X):
+  return math.atan2(X-CX,CX)
+
 
 # Detect and decode the qrcode
 Data=None
 t = time.time()
+time_before=t;
 
+index=0;
+start_time = time.time()
 while(1):
     hasFrame, inputImage = cap.read()
     if not hasFrame:
@@ -125,7 +142,9 @@ while(1):
         cv2.circle(inputImage,data[2],20,(0,0,255),5) # red - правый низ
         cv2.circle(inputImage,data[3],20,(0,0,0),5)# black - правый верх
         
-        mu_0= getMU(getCenter(data[0], data[3]).y + (getCenter(data[1], data[2]).y - getCenter(data[0], data[3]).y)/2)
+        #mu_0= getMU(getCenter(data[0], data[3]).y + (getCenter(data[1], data[2]).y - getCenter(data[0], data[3]).y)/2)
+        
+        f_0= getMU(getCenter(data[0], data[3]).x + (getCenter(data[1], data[2]).x - getCenter(data[0], data[3]).x)/2)
 
         #cv2.putText(inputImage, f"{distanceCalculate2(data[0], data[1], H_QR)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)
 
@@ -138,11 +157,21 @@ while(1):
         Arg = np.arccos(cosA)#*180/math.pi
         x = b * math.sin(Arg)
         y = b * math.cos(Arg)
-        cv2.putText(inputImage, f"X = {x}, Y = {y}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(inputImage, f"X = {x}, Y = {y}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA)
         
-        cv2.putText(inputImage, f"cosA = {cosA}, A = {Arg*180/math.pi}", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(inputImage, f"cosA = {cosA}, A = {Arg*180/math.pi}", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
-        cv2.putText(inputImage, f"mu_0 = {mu_0*180/math.pi}", (10, 260), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)
+
+        out.write(inputImage)
+        current_time=time.time()
+        elapsed_time_secs = current_time - time_before
+        time_before=current_time
+        df.loc[index]={'t':elapsed_time_secs,'x':x,'y':y,'alpha':f_0}
+        index=index+1;
+        if (abs(b)<100):
+          df.to_csv('Tests') 
+          break;
+        #cv2.putText(inputImage, f"mu_0 = {mu_0*180/math.pi}", (10, 260), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
         
         #cv2.putText(inputImage, "Length : {}".format(Z/1000*100), (10, 125), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
     else:
@@ -150,10 +179,10 @@ while(1):
     
     display(inputImage, decodedObjects)
     cv2.imshow("Result",inputImage)
+
     #vid_writer.write(inputImage)
     k = cv2.waitKey(20)
     if k == 27:
         break
 cv2.destroyAllWindows()
 #vid_writer.release()
-
