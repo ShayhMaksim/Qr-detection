@@ -30,7 +30,7 @@ class A:
 
 cap = cv2.VideoCapture(0)
 hasFrame,frame = cap.read()
-out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
+out = cv2.VideoWriter('output2.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
 CX=frame.shape[1]/2
 CY=frame.shape[0]/2
 
@@ -178,12 +178,12 @@ while(1):
         cv2.putText(inputImage, "ZBAR : QR Code NOT Detected", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
     
     display(inputImage, decodedObjects)
-    cv2.imshow("Result",inputImage)
+    #cv2.imshow("Result",inputImage)
 
     #vid_writer.write(inputImage)
     k = cv2.waitKey(20)
     if k == 27:
-        df.to_csv('Tests2')
+        df.to_csv('Tests3')
         break
 cv2.destroyAllWindows()
 #vid_writer.release()
