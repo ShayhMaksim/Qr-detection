@@ -162,12 +162,12 @@ while(1):
         cv2.putText(inputImage, f"cosA = {cosA}, A = {Arg*180/math.pi}", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
 
-        out.write(inputImage)
+        #out.write(inputImage)
         current_time=time.time()
         elapsed_time_secs = current_time - time_before
         time_before=current_time
         df.loc[index]={'t':elapsed_time_secs,'x':x,'y':y,'alpha':f_0}
-        index=index+1;
+        index=index+1; df.to_csv('Tests4')
         if (abs(b)<100):
           df.to_csv('Tests') 
           break;
@@ -180,7 +180,7 @@ while(1):
     display(inputImage, decodedObjects)
     #cv2.imshow("Result",inputImage)
 
-    #vid_writer.write(inputImage)
+    out.write(inputImage)
     k = cv2.waitKey(20)
     if k == 27:
         df.to_csv('Tests3')
