@@ -183,6 +183,7 @@ while(1):
     #vid_writer.write(inputImage)
     k = cv2.waitKey(20)
     if k == 27:
+        df.to_csv('Tests2')
         break
 cv2.destroyAllWindows()
 #vid_writer.release()
