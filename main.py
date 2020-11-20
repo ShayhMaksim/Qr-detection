@@ -46,7 +46,7 @@ x_c=np.zeros(3)
 Dphi=np.zeros((3,3))
 Dphi[0][0]=5
 Dphi[1][1]=5
-Dphi[2][2]=0.01
+Dphi[2][2]=0.005
 
 #матрица наблюдений
 H=np.zeros((3,3))
@@ -61,19 +61,20 @@ p_c[0][0]=100
 p_c[1][1]=100
 p_c[2][2]=100
 
-V=30
+V=40
 
 x_c[0]=1000
 x_c[1]=1000
 x_c[2]=0.3
 
-
+special_t=0
 
 while(1):
 
-    x_p,p_p=Prediction(dt,x_c,p_c)
+    x_p,p_p=Prediction(special_t,x_c,p_c)
 
     if ((t+dt)>current_t):
+        x_p,p_p=Prediction(df['t'][index],x_c,p_c)
         Y=np.asarray([df['x'][index],df['y'][index],df['alpha'][index]])
         x_c,p_c=Correction(Y,df['t'][index],x_p,p_p)
 
@@ -81,9 +82,11 @@ while(1):
         New_P.loc[index]={'t':t,'p_p_X':p_c[0][0],'p_p_Y':p_c[1][1],'p_p_Aplha':p_c[2][2],}
         index=index+1
         current_t=df['t'][index]+current_t
+        special_t=0
         if (index==9): break
 
     t=t+dt
+    special_t=special_t+dt
     
 New_X.to_csv('X')
 New_P.to_csv('P')
