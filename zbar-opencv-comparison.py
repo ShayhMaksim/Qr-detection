@@ -30,7 +30,7 @@ class A:
 
 cap = cv2.VideoCapture(0)
 hasFrame,frame = cap.read()
-out = cv2.VideoWriter('output2.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
+out = cv2.VideoWriter('output7.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
 CX=frame.shape[1]/2
 CY=frame.shape[0]/2
 
@@ -167,7 +167,7 @@ while(1):
         elapsed_time_secs = current_time - time_before
         time_before=current_time
         df.loc[index]={'t':elapsed_time_secs,'x':x,'y':y,'alpha':f_0}
-        index=index+1; df.to_csv('Tests4')
+        index=index+1; df.to_csv('Tests7')
         if (abs(b)<100):
           df.to_csv('Tests') 
           break;
