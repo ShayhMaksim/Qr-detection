@@ -15,12 +15,12 @@ SIDE_OF_QR = 45
 # ANGLE_MU=19*math.pi/180
 ANGLE_FI=45*math.pi/180
 ANGLE_MU=45*math.pi/180
-H_QR = 90
+H_QR = -20
 
 
 
 
-df=pd.DataFrame(columns=['t','x','y','alpha'])
+df=pd.DataFrame(columns=['t','x','y','alpha','f'])
 
 
 class A:
@@ -166,8 +166,8 @@ while(1):
         current_time=time.time()
         elapsed_time_secs = current_time - time_before
         time_before=current_time
-        df.loc[index]={'t':elapsed_time_secs,'x':x,'y':y,'alpha':f_0}
-        index=index+1; df.to_csv('Tests7')
+        df.loc[index]={'t':elapsed_time_secs,'x':x,'y':y,'alpha':f_0,'f':Arg}
+        index=index+1; df.to_csv('Tests10')
         if (abs(b)<100):
           df.to_csv('Tests') 
           break;
