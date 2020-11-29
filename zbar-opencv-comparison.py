@@ -17,9 +17,6 @@ ANGLE_FI=45*math.pi/180
 ANGLE_MU=45*math.pi/180
 H_QR = -20
 
-
-
-
 df=pd.DataFrame(columns=['t','x','y','alpha','f'])
 
 
@@ -30,7 +27,7 @@ class A:
 
 cap = cv2.VideoCapture(0)
 hasFrame,frame = cap.read()
-out = cv2.VideoWriter('output13.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
+out = cv2.VideoWriter('output14.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
 CX=frame.shape[1]/2
 CY=frame.shape[0]/2
 
@@ -98,9 +95,9 @@ def getF(X):
 # Detect and decode the qrcode
 Data=None
 t = time.time()
-time_before=t;
+time_before=t
 
-index=0;
+index=0
 start_time = time.time()
 while(1):
     hasFrame, inputImage = cap.read()
@@ -167,7 +164,7 @@ while(1):
         elapsed_time_secs = current_time - time_before
         time_before=current_time
         df.loc[index]={'t':elapsed_time_secs,'x':x,'y':y,'alpha':f_0,'f':Arg}
-        index=index+1; df.to_csv('Tests13')
+        index=index+1; df.to_csv('Tests14')
         if (abs(b)<100):
           df.to_csv('Tests') 
           break;
