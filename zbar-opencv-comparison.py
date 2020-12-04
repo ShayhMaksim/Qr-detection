@@ -17,7 +17,7 @@ SIDE_OF_QR = 45
 ANGLE_FI=45*math.pi/180
 ANGLE_MU=45*math.pi/180
 H_QR = -20
-H_CAMERA = 0
+H_CAMERA = 110
 
 VIDEO_NAME="video1.avi"
 TEST_NAME="test1"
@@ -158,7 +158,7 @@ while(1):
         cv2.putText(inputImage, "ZBAR : QR Code NOT Detected", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
     
     display(inputImage, decodedObjects)
-    cv2.imshow("Result",inputImage)
+    #cv2.imshow("Result",inputImage)
 
     out.write(inputImage)
     k = cv2.waitKey(20)
