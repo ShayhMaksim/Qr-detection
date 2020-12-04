@@ -7,6 +7,7 @@ import cv2
 import copy
 import pandas as pd
 import time
+from main import *
 
 #FX = 7.2125114092664523e+02
 FX = 7.304041689e+02
@@ -157,19 +158,26 @@ while(1):
         Arg = np.arccos(cosA)#*180/math.pi
         x = b * math.sin(Arg)
         y = b * math.cos(Arg)
-        
+
+        cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA) 
+
         #cv2.putText(inputImage, f"X = {x}, Y = {y}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA) 
         #cv2.putText(inputImage, f"cosA = {cosA}, A = {Arg*180/math.pi}", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
-
 
         #out.write(inputImage)
         current_time=time.time()
         elapsed_time_secs = current_time - time_before
         time_before=current_time
+
+        x_p,p_p=Prediction(dt,x_c,p_c)
+        Y=np.asarray([x,y,Arg])
+        x_c,p_c=Correction(Y,elapsed_time_secs,x_p,p_p)
+
+        cv2.putText(inputImage, f"X = {round(x_c[0], 3)}, Y = {round(x_c[1],3)} ", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
+
         df.loc[index]={'t':elapsed_time_secs,'x':x,'y':y,'alpha':f_0,'f':Arg}
         index=index+1; df.to_csv('Tests14')
         if (abs(b)<100):
-          df.to_csv('Tests') 
           break;
         #cv2.putText(inputImage, f"mu_0 = {mu_0*180/math.pi}", (10, 260), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
         
@@ -183,7 +191,6 @@ while(1):
     out.write(inputImage)
     k = cv2.waitKey(20)
     if k == 27:
-        df.to_csv('Tests3')
         break
 cv2.destroyAllWindows()
 #vid_writer.release()

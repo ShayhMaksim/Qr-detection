@@ -77,34 +77,34 @@ x_c[2]=1.56
 
 special_t=0
 
-x=np.zeros(3)
-x[:]=x_c[:]
+# x=np.zeros(3)
+# x[:]=x_c[:]
 
 
-while(1):
+# while(1):
   
-    x[0]=x[0]-V*dt*np.sin(x[2])
-    x[1]=x[1]+V*dt*np.cos(x[2])
-    x[2]=x[2]
+#     x[0]=x[0]-V*dt*np.sin(x[2])
+#     x[1]=x[1]+V*dt*np.cos(x[2])
+#     x[2]=x[2]
 
-    # x_p,p_p=Prediction(dt,x,p_c)
-    # x[:]=x_p[:]
-    # p_c[:]=p_c[:]
+#     # x_p,p_p=Prediction(dt,x,p_c)
+#     # x[:]=x_p[:]
+#     # p_c[:]=p_c[:]
 
-    if ((t+dt)>current_t):
-        x_p,p_p=Prediction(dt,x,p_c)
-        Y=np.asarray([df['x'][index],df['y'][index],df['f'][index]])
-        x_c,p_c=Correction(Y,df['t'][index],x_p,p_p)
-        x[:]=x_c[:]
-        New_X.loc[index]={'t':current_t,'x':x_c[0],'y':x_c[1],'alpha':x_c[2],}
-        New_P.loc[index]={'t':current_t,'p_p_X':p_c[0][0],'p_p_Y':p_c[1][1],'p_p_Aplha':p_c[2][2],}
-        index=index+1
-        if (index==12): break
-        current_t=df['t'][index]+current_t
-        special_t=0
+#     if ((t+dt)>current_t):
+#         x_p,p_p=Prediction(dt,x,p_c)
+#         Y=np.asarray([df['x'][index],df['y'][index],df['f'][index]])
+#         x_c,p_c=Correction(Y,df['t'][index],x_p,p_p)
+#         x[:]=x_c[:]
+#         New_X.loc[index]={'t':current_t,'x':x_c[0],'y':x_c[1],'alpha':x_c[2],}
+#         New_P.loc[index]={'t':current_t,'p_p_X':p_c[0][0],'p_p_Y':p_c[1][1],'p_p_Aplha':p_c[2][2],}
+#         index=index+1
+#         if (index==12): break
+#         current_t=df['t'][index]+current_t
+#         special_t=0
 
-    t=t+dt
-    special_t=special_t+dt
+#     t=t+dt
+#     special_t=special_t+dt
     
-New_X.to_csv('X')
-New_P.to_csv('P')
+# New_X.to_csv('X')
+# New_P.to_csv('P')
