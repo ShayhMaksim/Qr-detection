@@ -82,10 +82,14 @@ x[:]=x_c[:]
 
 
 while(1):
-    
+  
     x[0]=x[0]-V*dt*np.sin(x[2])
     x[1]=x[1]+V*dt*np.cos(x[2])
     x[2]=x[2]
+
+    # x_p,p_p=Prediction(dt,x,p_c)
+    # x[:]=x_p[:]
+    # p_c[:]=p_c[:]
 
     if ((t+dt)>current_t):
         x_p,p_p=Prediction(dt,x,p_c)

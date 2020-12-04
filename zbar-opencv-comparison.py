@@ -110,6 +110,9 @@ while(1):
     else:
         zbarData=''
     if zbarData:
+        arr = list(map(float, zbarData.split()))
+        SIDE_OF_QR = arr[0]
+        H_QR = arr[3]
         cv2.putText(inputImage, "ZBAR : {}".format(zbarData), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
         Angle=anglepicture(decodedObjects[0].polygon)
         cv2.putText(inputImage, "Angle : {}".format(Angle), (10, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
@@ -129,15 +132,15 @@ while(1):
           data[1]=polygon[0]
           data[2]=polygon[1]
           data[3]=polygon[2]
-          cv2.putText(inputImage, f"Rotated !!!", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)            
+          #cv2.putText(inputImage, f"Rotated !!!", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)            
           
 
         #data=polygon[:]
 
-        cv2.circle(inputImage,data[0],20,(0,255,0),5)# зеленый - левый вверх
-        cv2.circle(inputImage,data[1],20,(255,0,0),5) # синий - левый низ
-        cv2.circle(inputImage,data[2],20,(0,0,255),5) # red - правый низ
-        cv2.circle(inputImage,data[3],20,(0,0,0),5)# black - правый верх
+        #cv2.circle(inputImage,data[0],20,(0,255,0),5)# зеленый - левый вверх
+        #cv2.circle(inputImage,data[1],20,(255,0,0),5) # синий - левый низ
+        #cv2.circle(inputImage,data[2],20,(0,0,255),5) # red - правый низ
+        #cv2.circle(inputImage,data[3],20,(0,0,0),5)# black - правый верх
         
         #mu_0= getMU(getCenter(data[0], data[3]).y + (getCenter(data[1], data[2]).y - getCenter(data[0], data[3]).y)/2)
         
@@ -146,7 +149,7 @@ while(1):
         #cv2.putText(inputImage, f"{distanceCalculate2(data[0], data[1], H_QR)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)
 
         #cv2.putText(inputImage, f"{distanceCalculate2(getCenter(data[0], data[3]), getCenter(data[1], data[2]),H_QR)}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)
-        cv2.putText(inputImage, f"{distanceCalculate2(data[3], data[2], H_QR)}", (10, 210), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)
+        #cv2.putText(inputImage, f"{distanceCalculate2(data[3], data[2], H_QR)}", (10, 210), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)
         a = distanceCalculate2(data[0], data[1], H_QR)
         b = distanceCalculate2(getCenter(data[0], data[3]), getCenter(data[1], data[2]), H_QR)
         c = SIDE_OF_QR/2
@@ -154,9 +157,9 @@ while(1):
         Arg = np.arccos(cosA)#*180/math.pi
         x = b * math.sin(Arg)
         y = b * math.cos(Arg)
-        cv2.putText(inputImage, f"X = {x}, Y = {y}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA)
         
-        cv2.putText(inputImage, f"cosA = {cosA}, A = {Arg*180/math.pi}", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
+        #cv2.putText(inputImage, f"X = {x}, Y = {y}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA) 
+        #cv2.putText(inputImage, f"cosA = {cosA}, A = {Arg*180/math.pi}", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
 
         #out.write(inputImage)
@@ -175,7 +178,7 @@ while(1):
         cv2.putText(inputImage, "ZBAR : QR Code NOT Detected", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
     
     display(inputImage, decodedObjects)
-    #cv2.imshow("Result",inputImage)
+    cv2.imshow("Result",inputImage)
 
     out.write(inputImage)
     k = cv2.waitKey(20)
