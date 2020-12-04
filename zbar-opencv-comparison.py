@@ -19,8 +19,8 @@ ANGLE_MU=45*math.pi/180
 H_QR = -20
 H_CAMERA = 110
 
-VIDEO_NAME="video1.avi"
-TEST_NAME="test1"
+VIDEO_NAME="video2.avi"
+TEST_NAME="test2"
 
 
 df=pd.DataFrame(columns=['t','x','y','alpha','f'])
