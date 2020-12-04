@@ -145,7 +145,7 @@ while(1):
         elapsed_time_secs = current_time - time_before
         time_before=current_time
 
-        x_p,p_p=Prediction(dt,x_c,p_c)
+        x_p,p_p=Prediction(elapsed_time_secs,x_c,p_c)
         Y=np.asarray([x,y,Arg])
         x_c,p_c=Correction(Y,elapsed_time_secs,x_p,p_p)
 
