@@ -17,18 +17,23 @@ SIDE_OF_QR = 45
 ANGLE_FI=45*math.pi/180
 ANGLE_MU=45*math.pi/180
 H_QR = -20
+H_CAMERA = 0
+
+VIDEO_NAME="video1.avi"
+TEST_NAME="test1"
+
 
 df=pd.DataFrame(columns=['t','x','y','alpha','f'])
 
 
-class A:
+class Point:
   def __init__(self,x,y):
     self.x=x
     self.y=y
 
 cap = cv2.VideoCapture(0)
 hasFrame,frame = cap.read()
-out = cv2.VideoWriter('output14.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
+out = cv2.VideoWriter(VIDEO_NAME,cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
 CX=frame.shape[1]/2
 CY=frame.shape[0]/2
 
@@ -56,27 +61,13 @@ def display(im, decodedObjects):
       cv2.line(im, hull[j], hull[ (j+1) % n], (255,0,0), 3)
 
 
-
-def anglepicture(zbarData):
-     lenpicture = [320, 240]
-     viewingangle = [48,48]
-     cX = zbarData[0].x + (zbarData[2].x - zbarData[0].x) / 2
-     cY = zbarData[0].y + (zbarData[2].y - zbarData[0].y) / 2
-     cX = cX - lenpicture[0]
-     cY = cY - lenpicture[1]
-     angle = []
-     angle.append(cX/lenpicture[0]*viewingangle[0])
-     angle.append(cY / lenpicture[1] * viewingangle[1])
-     return angle
-
-
 def distanceCalculate(point1, point2):
   Len=((point1.x-point2.x)**2+(point1.y-point2.y)**2)**0.5       
   Z=FX*SIDE_OF_QR/(Len)
   return Z
 
 def getCenter(point1, point2):
-  p = A(0,0)
+  p = Point(0,0)
   p.x=(point1.x)+((point2.x)-(point1.x))/2
   p.y=(point1.y)+((point2.y-point1.y))/2
   return p
@@ -113,14 +104,9 @@ while(1):
     if zbarData:
         arr = list(map(float, zbarData.split()))
         SIDE_OF_QR = arr[0]
-        H_QR = arr[3]
+        H_QR = arr[3] - H_CAMERA
         cv2.putText(inputImage, "ZBAR : {}".format(zbarData), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-        Angle=anglepicture(decodedObjects[0].polygon)
-        cv2.putText(inputImage, "Angle : {}".format(Angle), (10, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
         polygon = decodedObjects[0].polygon
-
-        #rect = decodedObjects[0].rect
-        #cv2.rectangle(inputImage,(rect.left, rect.top),(rect.left + rect.width, rect.top + rect.height), (255,0,0), 3)
 
 
         data=polygon[:]
@@ -136,8 +122,6 @@ while(1):
           #cv2.putText(inputImage, f"Rotated !!!", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)            
           
 
-        #data=polygon[:]
-
         #cv2.circle(inputImage,data[0],20,(0,255,0),5)# зеленый - левый вверх
         #cv2.circle(inputImage,data[1],20,(255,0,0),5) # синий - левый низ
         #cv2.circle(inputImage,data[2],20,(0,0,255),5) # red - правый низ
@@ -147,10 +131,6 @@ while(1):
         
         f_0= getMU(getCenter(data[0], data[3]).x + (getCenter(data[1], data[2]).x - getCenter(data[0], data[3]).x)/2)
 
-        #cv2.putText(inputImage, f"{distanceCalculate2(data[0], data[1], H_QR)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)
-
-        #cv2.putText(inputImage, f"{distanceCalculate2(getCenter(data[0], data[3]), getCenter(data[1], data[2]),H_QR)}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)
-        #cv2.putText(inputImage, f"{distanceCalculate2(data[3], data[2], H_QR)}", (10, 210), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)
         a = distanceCalculate2(data[0], data[1], H_QR)
         b = distanceCalculate2(getCenter(data[0], data[3]), getCenter(data[1], data[2]), H_QR)
         c = SIDE_OF_QR/2
@@ -161,10 +141,6 @@ while(1):
 
         cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA) 
 
-        #cv2.putText(inputImage, f"X = {x}, Y = {y}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA) 
-        #cv2.putText(inputImage, f"cosA = {cosA}, A = {Arg*180/math.pi}", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
-
-        #out.write(inputImage)
         current_time=time.time()
         elapsed_time_secs = current_time - time_before
         time_before=current_time
@@ -176,12 +152,8 @@ while(1):
         cv2.putText(inputImage, f"X = {round(x_c[0], 3)}, Y = {round(x_c[1],3)} ", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
         df.loc[index]={'t':elapsed_time_secs,'x':x,'y':y,'alpha':f_0,'f':Arg}
-        index=index+1; df.to_csv('Tests14')
-        if (abs(b)<100):
-          break;
-        #cv2.putText(inputImage, f"mu_0 = {mu_0*180/math.pi}", (10, 260), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
-        
-        #cv2.putText(inputImage, "Length : {}".format(Z/1000*100), (10, 125), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+        index=index+1; df.to_csv(TEST_NAME)
+
     else:
         cv2.putText(inputImage, "ZBAR : QR Code NOT Detected", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
     
