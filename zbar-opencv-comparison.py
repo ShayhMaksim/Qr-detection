@@ -19,14 +19,9 @@ ANGLE_MU=45*math.pi/180
 H_QR = -20
 H_CAMERA = 110
 
-<<<<<<< HEAD
 VIDEO_NAME="TestRotate.avi"
 TEST_NAME="test444"
 REAL_DATA="data444"
-=======
-VIDEO_NAME="final3.avi"
-TEST_NAME="finaltest"
->>>>>>> f2273ead66a014b25281365eaf794eac64075223
 
 
 df=pd.DataFrame(columns=['t','x','y','alpha','f'])
