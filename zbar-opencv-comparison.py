@@ -7,7 +7,7 @@ import cv2
 import copy
 import pandas as pd
 import time
-from main import *
+from main2 import *
 
 #FX = 7.2125114092664523e+02
 FX = 7.304041689e+02
@@ -19,12 +19,18 @@ ANGLE_MU=45*math.pi/180
 H_QR = -20
 H_CAMERA = 110
 
+<<<<<<< HEAD
+VIDEO_NAME="TestRotate.avi"
+TEST_NAME="test444"
+REAL_DATA="data444"
+=======
 VIDEO_NAME="final3.avi"
 TEST_NAME="finaltest"
+>>>>>>> f2273ead66a014b25281365eaf794eac64075223
 
 
 df=pd.DataFrame(columns=['t','x','y','alpha','f'])
-
+globalDF=pd.DataFrame(columns=['t','x','y'])
 
 class Point:
   def __init__(self,x,y):
@@ -91,6 +97,8 @@ time_before=t
 
 index=0
 start_time = time.time()
+
+# [size z x y angle]
 while(1):
     hasFrame, inputImage = cap.read()
     if not hasFrame:
@@ -104,7 +112,7 @@ while(1):
     if zbarData:
         arr = list(map(float, zbarData.split()))
         SIDE_OF_QR = arr[0]
-        H_QR = arr[3] - H_CAMERA
+        H_QR = arr[1] - H_CAMERA
         cv2.putText(inputImage, "ZBAR : {}".format(zbarData), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
         polygon = decodedObjects[0].polygon
 
@@ -119,13 +127,13 @@ while(1):
           data[1]=polygon[0]
           data[2]=polygon[1]
           data[3]=polygon[2]
-          #cv2.putText(inputImage, f"Rotated !!!", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)            
+          # cv2.putText(inputImage, f"Rotated !!!", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2, cv2.LINE_AA)            
           
 
-        #cv2.circle(inputImage,data[0],20,(0,255,0),5)# зеленый - левый вверх
-        #cv2.circle(inputImage,data[1],20,(255,0,0),5) # синий - левый низ
-        #cv2.circle(inputImage,data[2],20,(0,0,255),5) # red - правый низ
-        #cv2.circle(inputImage,data[3],20,(0,0,0),5)# black - правый верх
+        # cv2.circle(inputImage,data[0],20,(0,255,0),5)# зеленый - левый вверх
+        # cv2.circle(inputImage,data[1],20,(255,0,0),5) # синий - левый низ
+        # cv2.circle(inputImage,data[2],20,(0,0,255),5) # red - правый низ
+        # cv2.circle(inputImage,data[3],20,(0,0,0),5)# black - правый верх
         
         #mu_0= getMU(getCenter(data[0], data[3]).y + (getCenter(data[1], data[2]).y - getCenter(data[0], data[3]).y)/2)
         
@@ -146,19 +154,28 @@ while(1):
         time_before=current_time
 
         x_p,p_p=Prediction(elapsed_time_secs,x_c,p_c)
-        Y=np.asarray([x,y,Arg])
+        Y=np.asarray([x,y])
         x_c,p_c=Correction(Y,elapsed_time_secs,x_p,p_p)
-
-        cv2.putText(inputImage, f"X = {round(x_c[0], 3)}, Y = {round(x_c[1],3)} ", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
+        cv2.putText(inputImage, f"X = {round(x, 3)}, Y = {round(y,3)} ", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
+        
+        cv2.putText(inputImage, f"X = {round(x_c[0], 3)}, Y = {round(x_c[1],3)} ", (10, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 60, 255), 2, cv2.LINE_AA)
 
         df.loc[index]={'t':elapsed_time_secs,'x':x,'y':y,'alpha':f_0,'f':Arg}
-        index=index+1; df.to_csv(TEST_NAME)
+
+        globalX=x_c[0]*np.cos(arr[4])-x_c[1]*np.sin(arr[4])+arr[2]
+        globalY=-x_c[0]*np.sin(arr[4])+x_c[1]*np.cos(arr[4])+arr[3]
+
+        cv2.putText(inputImage, f"X = {round(globalX, 3)}, Y = {round(globalY,3)} ", (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 120, 255), 2, cv2.LINE_AA)
+
+        globalDF[index]={'t':elapsed_time_secs,'x':globalX,'y':globalY}
+
+        index=index+1; df.to_csv(TEST_NAME); globalDF.to_csv(REAL_DATA)
 
     else:
         cv2.putText(inputImage, "ZBAR : QR Code NOT Detected", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
     
     display(inputImage, decodedObjects)
-    #cv2.imshow("Result",inputImage)
+    cv2.imshow("Result",inputImage)
 
     out.write(inputImage)
     k = cv2.waitKey(20)
