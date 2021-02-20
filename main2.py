@@ -25,7 +25,7 @@ def Correction(Y,dt:float,x_p,p_p):
     return x_c,p_c
 
 
-df = pd.read_csv('Tests4')
+# df = pd.read_csv('Tests4')
 
 
 t=0.
@@ -33,11 +33,11 @@ dt=0.001
 index=0
 current_t=0.
 
-New_X=pd.DataFrame(columns=['t','x','y'])
+# New_X=pd.DataFrame(columns=['t','x','y'])
 
-New_P=pd.DataFrame(columns=['t','p_p_X','p_p_Y'])
+# New_P=pd.DataFrame(columns=['t','p_p_X','p_p_Y'])
 
-current_t=df['t'][index]
+# current_t=df['t'][index]
 
 x_p=np.zeros(2)
 x_c=np.zeros(2)
@@ -63,24 +63,24 @@ x_c[0]=800
 x_c[1]=200
 
 
-special_t=0
+# special_t=0
 
-while(1):
+# while(1):
 
-    if ((t+dt)>current_t):
-        x_p,p_p=Prediction(df['t'][index],x_c,p_c)
-        Y=np.asarray([df['x'][index],df['y'][index]])
-        x_c,p_c=Correction(Y,df['t'][index],x_p,p_p)
+#     if ((t+dt)>current_t):
+#         x_p,p_p=Prediction(df['t'][index],x_c,p_c)
+#         Y=np.asarray([df['x'][index],df['y'][index]])
+#         x_c,p_c=Correction(Y,df['t'][index],x_p,p_p)
 
-        New_X.loc[index]={'t':t,'x':x_c[0],'y':x_c[1],}
-        New_P.loc[index]={'t':t,'p_p_X':p_c[0][0],'p_p_Y':p_c[1][1],}
-        index=index+1
-        current_t=df['t'][index]+current_t
-        special_t=0
-        if (index==9): break
+#         New_X.loc[index]={'t':t,'x':x_c[0],'y':x_c[1],}
+#         New_P.loc[index]={'t':t,'p_p_X':p_c[0][0],'p_p_Y':p_c[1][1],}
+#         index=index+1
+#         current_t=df['t'][index]+current_t
+#         special_t=0
+#         if (index==9): break
 
-    t=t+dt
-    special_t=special_t+dt
+#     t=t+dt
+#     special_t=special_t+dt
     
-New_X.to_csv('X2')
-New_P.to_csv('P2')
+# New_X.to_csv('X2')
+# New_P.to_csv('P2')

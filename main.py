@@ -30,20 +30,20 @@ def Correction(Y,dt:float,x_p,p_p):
     return x_c,p_c
 
     
-df = pd.read_csv('Tests13')
+#df = pd.read_csv('Tests13')
 
-print(df.head())
+#print(df.head())
 
-t=0.
-dt=0.0001
-index=0
-current_t=0.
+# t=0.
+# dt=0.0001
+# index=0
+# current_t=0.
 
-New_X=pd.DataFrame(columns=['t','x','y','alpha'])
+# New_X=pd.DataFrame(columns=['t','x','y','alpha'])
 
-New_P=pd.DataFrame(columns=['t','p_p_X','p_p_Y','p_p_Aplha'])
+# New_P=pd.DataFrame(columns=['t','p_p_X','p_p_Y','p_p_Aplha'])
 
-current_t=df['t'][index]
+#current_t=df['t'][index]
 
 
 
