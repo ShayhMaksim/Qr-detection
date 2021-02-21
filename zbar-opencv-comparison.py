@@ -27,15 +27,17 @@ VIDEO_NAME="TestRotate.avi"
 TEST_NAME="test444"
 REAL_DATA="data444"
 
-
+# сетевое программирование для межпрограммного взаимодействие
 BIND_IP='127.0.0.1'
 BIND_PORT=8080
-
 server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 server.bind((BIND_IP,BIND_PORT))
 server.listen(2) # max blocklog of connections
 print('Listening on {}:{}'.format(BIND_IP,BIND_PORT))
+client_sock,address=server.accept()
+print('Accepted connection from {}:{}'.format(address[0],address[1]))
 
+# handle для отправки сообщения клиенту
 def handle_client_connection(client_socket,message):
   #request=client_socket.recv(1024)
   #print('Received {}'.format(request))
@@ -80,11 +82,13 @@ def display(im, decodedObjects):
       cv2.line(im, hull[j], hull[ (j+1) % n], (255,0,0), 3)
 
 
+# нахождене расстояния до Qr-кода
 def distanceCalculate(point1, point2):
   Len=((point1.x-point2.x)**2+(point1.y-point2.y)**2)**0.5       
   Z=FX*SIDE_OF_QR/(Len)
   return Z
 
+# нахождение центральной точки
 def getCenter(point1, point2):
   p = Point(0,0)
   p.x=(point1.x)+((point2.x)-(point1.x))/2
@@ -111,10 +115,9 @@ time_before=t
 index=0
 start_time = time.time()
 
-client_sock,address=server.accept()
-print('Accepted connection from {}:{}'.format(address[0],address[1]))
 
-# [size z x y angle]
+
+# Данные в Qt коде - [size z x y angle]
 while(1):
     hasFrame, inputImage = cap.read()
     if not hasFrame:
@@ -188,6 +191,7 @@ while(1):
         index=index+1; df.to_csv(TEST_NAME); globalDF.to_csv(REAL_DATA)
 
         message=str(elapsed_time_secs)+','+str(globalX)+','+str(globalY)
+        #если не разделять по потокам, то будет смешение данных
         client_handler=threading.Thread(
           target=handle_client_connection,
           args=(client_sock,message,)
