@@ -173,8 +173,9 @@ while(1):
         cosA = (a**2 - b**2 - c**2)/(-2*b*c)
         Arg = np.arccos(cosA)#*180/math.pi
         
-        x = b #math.sin(Arg)
-        y = coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.) #math.cos(Arg)
+        print(coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.))
+        x = b *math.sin(Arg)
+        y = b *math.cos(Arg) + coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.) #math.cos(Arg)
 
 
         cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA) 
