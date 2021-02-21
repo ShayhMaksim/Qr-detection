@@ -1,3 +1,4 @@
+from ctypes import string_at
 import numpy as np
 import sys
 import time
@@ -8,6 +9,8 @@ import copy
 import pandas as pd
 import time
 from main2 import *
+import socket
+import threading
 
 #FX = 7.2125114092664523e+02
 FX = 7.304041689e+02
@@ -24,6 +27,19 @@ VIDEO_NAME="TestRotate.avi"
 TEST_NAME="test444"
 REAL_DATA="data444"
 
+
+BIND_IP='127.0.0.1'
+BIND_PORT=8080
+
+server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+server.bind((BIND_IP,BIND_PORT))
+server.listen(2) # max blocklog of connections
+print('Listening on {}:{}'.format(BIND_IP,BIND_PORT))
+
+def handle_client_connection(client_socket,message):
+  #request=client_socket.recv(1024)
+  #print('Received {}'.format(request))
+  client_socket.send(message.encode())
 
 
 df=pd.DataFrame(columns=['t','x','y','alpha','f'])
@@ -94,6 +110,9 @@ time_before=t
 
 index=0
 start_time = time.time()
+
+client_sock,address=server.accept()
+print('Accepted connection from {}:{}'.format(address[0],address[1]))
 
 # [size z x y angle]
 while(1):
@@ -168,6 +187,13 @@ while(1):
 
         index=index+1; df.to_csv(TEST_NAME); globalDF.to_csv(REAL_DATA)
 
+        message=str(elapsed_time_secs)+','+str(globalX)+','+str(globalY)
+        client_handler=threading.Thread(
+          target=handle_client_connection,
+          args=(client_sock,message,)
+        )
+        client_handler.start()
+
     else:
         cv2.putText(inputImage, "ZBAR : QR Code NOT Detected", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
     
@@ -179,4 +205,5 @@ while(1):
     if k == 27:
         break
 cv2.destroyAllWindows()
+client_sock.close()
 #vid_writer.release()
