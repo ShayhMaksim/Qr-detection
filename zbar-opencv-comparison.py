@@ -14,7 +14,7 @@ import threading
 
 #FX = 7.2125114092664523e+02
 FX = 7.304041689e+02
-SIDE_OF_QR = 45
+#SIDE_OF_QR = 45
 # ANGLE_FI=24*math.pi/180
 # ANGLE_MU=19*math.pi/180
 ANGLE_FI=45*math.pi/180
@@ -88,6 +88,12 @@ def distanceCalculate(point1, point2):
   Z=FX*SIDE_OF_QR/(Len)
   return Z
 
+# нахождене расстояния до Qr-кода
+def coordY(point1, point2, X):
+  Len=((point1.x-point2.x)**2+(point1.y-point2.y)**2)**0.5       
+  y=SIDE_OF_QR*(X-CX)/Len
+  return y
+
 # нахождение центральной точки
 def getCenter(point1, point2):
   p = Point(0,0)
@@ -156,15 +162,20 @@ while(1):
         
         #mu_0= getMU(getCenter(data[0], data[3]).y + (getCenter(data[1], data[2]).y - getCenter(data[0], data[3]).y)/2)
         
-        f_0= getMU(getCenter(data[0], data[3]).x + (getCenter(data[1], data[2]).x - getCenter(data[0], data[3]).x)/2)
+        centerTop=getCenter(data[0], data[3])
+        centerBottom=getCenter(data[1], data[2])
+
+        f_0 = getF((centerBottom.x + centerTop.x)/2.)
 
         a = distanceCalculate2(data[0], data[1], H_QR)
-        b = distanceCalculate2(getCenter(data[0], data[3]), getCenter(data[1], data[2]), H_QR)
+        b = distanceCalculate2(centerTop, centerBottom, H_QR)
         c = SIDE_OF_QR/2
         cosA = (a**2 - b**2 - c**2)/(-2*b*c)
         Arg = np.arccos(cosA)#*180/math.pi
-        x = b * math.sin(Arg)
-        y = b * math.cos(Arg)
+        
+        x = b #math.sin(Arg)
+        y = coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.) #math.cos(Arg)
+
 
         cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA) 
 
