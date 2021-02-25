@@ -170,10 +170,16 @@ while(1):
         a = distanceCalculate2(data[0], data[1], H_QR)
         b = distanceCalculate2(centerTop, centerBottom, H_QR)
         c = SIDE_OF_QR/2
+        d = distanceCalculate2(data[2], data[3], H_QR)
         cosA = (a**2 - b**2 - c**2)/(-2*b*c)
-        Arg = np.arccos(cosA)#*180/math.pi
+        cosB = (d**2 - b**2 - c**2)/(-2*b*c)
+        A = np.arccos(cosA)#*180/math.pi
+        B = np.arccos(cosB)
+
+        Arg=A+(np.pi-A-B)/2
+        print(Arg*180/math.pi)
         
-        print(coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.))
+        #print(coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.))
         x = b *math.sin(Arg)
         y = b *math.cos(Arg) + coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.) #math.cos(Arg)
 
