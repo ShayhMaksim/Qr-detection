@@ -2,13 +2,20 @@ import pandas as pd
 import numpy as np
 from numpy import linalg as LA
 
+E=np.asarray([
+        [16,0],
+        [0,16],
+    ])
+
 def Prediction(dt:float,x_c,p_c):  
     F=np.asarray([
         [1,0],
         [0,1],
     ])
     x_p=np.dot(F,x_c)
-    p_p=np.dot(np.dot(F,p_c),np.transpose(F))
+    
+    p_p=np.add(E,np.dot(np.dot(F,p_c),np.transpose(F)))
+    
     return x_p,p_p
 
 def Correction(Y,dt:float,x_p,p_p):
