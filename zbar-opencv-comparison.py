@@ -20,7 +20,7 @@ FX = 7.304041689e+02
 ANGLE_FI=45*math.pi/180
 ANGLE_MU=45*math.pi/180
 H_QR = -20
-H_CAMERA = 110
+H_CAMERA = 700#110
 
 
 VIDEO_NAME="TestRotate.avi"
@@ -126,6 +126,9 @@ start_time = time.time()
 # Данные в Qt коде - [size z x y angle]
 while(1):
     hasFrame, inputImage = cap.read()
+    inputImage=cv2.cvtColor(inputImage, cv2.COLOR_BGR2LUV)
+    #ret, inputImage = cv2.threshold(inputImage, 130, 255, 0)
+    
     if not hasFrame:
         break
     decodedObjects = pyzbar.decode(inputImage)
@@ -199,8 +202,8 @@ while(1):
 
         df.loc[index]={'t':elapsed_time_secs,'x':x,'y':y,'alpha':f_0,'f':Arg}
 
-        globalX=x_c[0]*np.cos(arr[4])-x_c[1]*np.sin(arr[4])+arr[2]
-        globalY=-x_c[0]*np.sin(arr[4])+x_c[1]*np.cos(arr[4])+arr[3]
+        globalX=x_c[0]*np.cos(np.pi/180*arr[4])-x_c[1]*np.sin(np.pi/180*arr[4])+arr[2]
+        globalY=-x_c[0]*np.sin(np.pi/180*arr[4])+x_c[1]*np.cos(np.pi/180*arr[4])+arr[3]
 
         cv2.putText(inputImage, f"X = {round(globalX, 3)}, Y = {round(globalY,3)} ", (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 120, 255), 2, cv2.LINE_AA)
 
