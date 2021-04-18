@@ -20,28 +20,28 @@ FX = 7.304041689e+02
 ANGLE_FI=45*math.pi/180
 ANGLE_MU=45*math.pi/180
 H_QR = -20
-H_CAMERA = 1900#110
+H_CAMERA = 45#1900#45#110#1900
 
 
-VIDEO_NAME="TestRotate.avi"
+VIDEO_NAME="SecondVideo.avi"
 TEST_NAME="test444"
 REAL_DATA="data444"
 
 # сетевое программирование для межпрограммного взаимодействие
-BIND_IP='127.0.0.1'
-BIND_PORT=8080
-server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-server.bind((BIND_IP,BIND_PORT))
-server.listen(2) # max blocklog of connections
-print('Listening on {}:{}'.format(BIND_IP,BIND_PORT))
-client_sock,address=server.accept()
-print('Accepted connection from {}:{}'.format(address[0],address[1]))
+# BIND_IP='127.0.0.1'
+# BIND_PORT=8080
+# server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+# server.bind((BIND_IP,BIND_PORT))
+# server.listen(2) # max blocklog of connections
+# print('Listening on {}:{}'.format(BIND_IP,BIND_PORT))
+# client_sock,address=server.accept()
+# print('Accepted connection from {}:{}'.format(address[0],address[1]))
 
 # handle для отправки сообщения клиенту
-def handle_client_connection(client_socket,message):
-  #request=client_socket.recv(1024)
-  #print('Received {}'.format(request))
-  client_socket.send(message.encode())
+# def handle_client_connection(client_socket,message):
+#   #request=client_socket.recv(1024)
+#   #print('Received {}'.format(request))
+#   client_socket.send(message.encode())
 
 
 df=pd.DataFrame(columns=['t','x','y','alpha','f'])
@@ -54,7 +54,9 @@ class Point:
 
 cap = cv2.VideoCapture(0)
 hasFrame,frame = cap.read()
-out = cv2.VideoWriter(VIDEO_NAME,cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+#cv2.VideoWriter_fourcc('M','J','P','G')
+out = cv2.VideoWriter(VIDEO_NAME,fourcc, 10, (frame.shape[1],frame.shape[0]),0)
 CX=frame.shape[1]/2
 CY=frame.shape[0]/2
 
@@ -123,24 +125,27 @@ start_time = time.time()
 
 
 # Данные в Qt коде - [size z x y angle]
+
+def SMA(y,count):
+  try:
+    if SMA.count<=count:
+      SMA.count+=1
+      SMA.data.append(y)
+    else:
+      del SMA.data[0]
+      SMA.data.append(y)
+    return np.sum(SMA.data)/SMA.count
+  except:
+    SMA.count=1
+    SMA.data=[]
+    SMA.data.append(y)
+    return y
+
+
 while(1):
     hasFrame, inputImage = cap.read()
+    inputImage = cv2.cvtColor(inputImage, cv2.COLOR_BGR2GRAY)
     #ret, inputImage = cv2.threshold(inputImage, 130, 255, 0)
-
-    #inputImage = sr.upsample(inputImage) # upscale the input image
-    #inputImage = cv2.cvtColor( inputImage, cv2.COLOR_BGR2HSV ) # меняем цветовую модель с BGR на HSV
-    #gray = cv2.cvtColor(inputImage,cv2.COLOR_BGR2GRAY)
-    # ret,thresh = cv2.threshold(gray,127,255,0)
-    # contours,hier = cv2.findContours(thresh,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
-    
-    
-    # перебираем все найденные контуры в цикле
-    # for cnt in contours:
-    #   if cv2.contourArea(cnt)>5000:  # remove small areas like noise etc
-    #     hull = cv2.convexHull(cnt)    # find the convex hull of contour
-    #     hull = cv2.approxPolyDP(hull,0.1*cv2.arcLength(hull,True),True)
-    #     if len(hull)==4:
-    #         cv2.drawContours(inputImage,[hull],0,(0,255,0),2)
 
     if not hasFrame:
         break
@@ -193,14 +198,23 @@ while(1):
         B = np.arccos(cosB)
 
         Arg=B+(np.pi-A-B)/2
-        #print(Arg*180/math.pi)
+        
+        print(Arg*180/math.pi)
         
         #print(coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.))
-        x = b *math.sin(Arg)
+
+        b=b/math.sin(Arg)
+        x = b *math.sin(Arg)  #math.cos(Arg)
         y = b *math.cos(Arg) - coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.) #math.cos(Arg)
+        
+        b = (x**2+y**2)**0.5
+        Arg=math.atan2(x,y)
+        #x = x + (b-d)*math.cos(Arg)
+        y=SMA(y,10)
 
+        #x=(b**2-y**2)**0.5
 
-        cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA) 
+        cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA) 
 
         current_time=time.time()
         elapsed_time_secs = current_time - time_before
@@ -227,17 +241,18 @@ while(1):
 
         index=index+1; df.to_csv(TEST_NAME); globalDF.to_csv(REAL_DATA)
 
-        message=str(elapsed_time_secs)+','+str(globalX)+','+str(globalY)
+        #message=str(elapsed_time_secs)+','+str(globalX)+','+str(globalY)
         #если не разделять по потокам, то будет смешение данных
-        client_handler=threading.Thread(
-          target=handle_client_connection,
-          args=(client_sock,message,)
-        )
-        client_handler.start()
+        # client_handler=threading.Thread(
+        #   target=handle_client_connection,
+        #   args=(client_sock,message,)
+        # )
+        # client_handler.start()
 
     else:
         cv2.putText(inputImage, "ZBAR : QR Code NOT Detected", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
     
+    #inputImage = cv2.cvtColor(inputImage, cv2.COLOR_GRAY2BGR)
     display(inputImage, decodedObjects)
     cv2.imshow("Result",inputImage)
 
@@ -246,5 +261,5 @@ while(1):
     if k == 27:
         break
 cv2.destroyAllWindows()
-client_sock.close()
+#client_sock.close()
 #vid_writer.release()
