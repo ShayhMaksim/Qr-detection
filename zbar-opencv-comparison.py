@@ -4,6 +4,7 @@ import sys
 import time
 from numpy.core.fromnumeric import mean
 from numpy.core.overrides import ArgSpec
+from pandas.core.indexes import base
 import pyzbar.pyzbar as pyzbar
 import math
 import cv2
@@ -13,6 +14,7 @@ import time
 from main2 import *
 import socket
 import threading
+import scipy.optimize 
 
 #FX = 7.2125114092664523e+02
 FX = 7.304041689e+02
@@ -205,6 +207,58 @@ def SingleData(inputImage,decodedObjects,textStep):
 
     return globalX,globalY
 
+def Localization(x,b):
+    x, y = x
+    X=[]
+    for i in b:
+        X.append([i[0],i[1]])
+    Result=[]
+    for x1 in X:
+        Result.append((x1[0]-x)**2+(x1[1]-y)**2)
+    return np.asarray(Result)
+
+def RP(x,d,b):
+    return (Localization(x,b)-d)
+
+def ClassicData(inputImage,decodedObjects):
+  Data=[]
+  Distance=[]
+
+  for i in range(0,len(decodedObjects)):
+    zbarData = decodedObjects[i].data
+    arr = list(map(float, zbarData.split()))
+    Data.append([arr[2],arr[3]])
+    polygon = decodedObjects.polygon
+    SIDE_OF_QR = arr[0]
+    H_QR = arr[1] - H_CAMERA
+
+    data=polygon[:]
+    if ((polygon[0].y + 30)<(polygon[1].y)):
+      data=polygon[:]
+      key=False
+    else:
+      key=True
+      data[0]=polygon[3]
+      data[1]=polygon[0]
+      data[2]=polygon[1]
+      data[3]=polygon[2]
+       
+    centerTop=getCenter(data[0], data[3])
+    centerBottom=getCenter(data[1], data[2])
+
+
+    a = distanceCalculate2(data[0], data[1], H_QR,SIDE_OF_QR)
+    b = distanceCalculate2(centerTop, centerBottom, H_QR,SIDE_OF_QR)
+    d = distanceCalculate2(data[2], data[3], H_QR,SIDE_OF_QR)
+
+    b = mean([a,b,d])
+    Distance.append(b)
+  x = scipy.optimize.leastsq(RP, np.asarray((1,1)), args=(Data,Distance))[0]
+
+  cv2.putText(inputImage, f"X(gl) = {round(x[0], 3)}, Y(gl) = {round(x[0],3)} ", (200, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
+
+  return x[0],y[0]
+    
 
 while(1):
     hasFrame, inputImage = cap.read()
@@ -229,10 +283,11 @@ while(1):
       current_time=time.time()
       elapsed_time_secs = current_time - time_before
       time_before=current_time
+
+      if len(decodedObjects)>1:
+        x,y=ClassicData(inputImage,decodedObjects)
        
-
       globalDF=globalDF.append({'t':elapsed_time_secs,'x':x,'y':y},ignore_index=True)
-
 
       index=index+1; 
 
