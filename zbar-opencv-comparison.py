@@ -220,7 +220,7 @@ def Localization(x,b):
 def RP(x,d,b):
     return (Localization(x,b)-d)
 
-def ClassicData(inputImage,decodedObjects):
+def Classic(inputImage,decodedObjects,X0):
   Data=[]
   Distance=[]
 
@@ -253,7 +253,7 @@ def ClassicData(inputImage,decodedObjects):
 
     b = mean([a,b,d])
     Distance.append(b)
-  x = scipy.optimize.leastsq(RP, np.asarray((1,1)), args=(Data,Distance))[0]
+  x = scipy.optimize.leastsq(RP, X0, args=(Data,Distance))[0]
 
   cv2.putText(inputImage, f"X(gl) = {round(x[0], 3)}, Y(gl) = {round(x[0],3)} ", (200, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
@@ -285,7 +285,9 @@ while(1):
       time_before=current_time
 
       if len(decodedObjects)>1:
-        x,y=ClassicData(inputImage,decodedObjects)
+        X0=np.asarray([x,y])
+        x_2,y_2=Classic(inputImage,decodedObjects,X0)
+        print(x_2,y_2)
        
       globalDF=globalDF.append({'t':elapsed_time_secs,'x':x,'y':y},ignore_index=True)
 
