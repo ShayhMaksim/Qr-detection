@@ -8,7 +8,7 @@ BIND_PORT=8080
 
 client.connect((BIND_IP,BIND_PORT))
 
-# в бесконечном цикле получаем сообщения от сервера
+# в бесконечном цикле получаем сообщения от сервера 
 while True:
     response = client.recv(1024)
     print(response)
