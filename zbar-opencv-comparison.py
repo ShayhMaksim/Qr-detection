@@ -27,9 +27,10 @@ H_QR = -20
 H_CAMERA = 45#1900#45#110#1900
 
 
-VIDEO_NAME="F3.avi"
+VIDEO_NAME="F4.avi"
 TEST_NAME="test444"
-REAL_DATA="Exp5"
+REAL_DATA="Exp15"
+SUPPORT_DATA="Exp15_s"
 
 # сетевое программирование для межпрограммного взаимодействие
 # BIND_IP='127.0.0.1'
@@ -48,7 +49,7 @@ REAL_DATA="Exp5"
 #   client_socket.send(message.encode())
 
 
-
+supportDF=pd.DataFrame({'t':[],'x':[],'y':[]})
 globalDF=pd.DataFrame({'t':[],'x':[],'y':[]})
 
 class Point:
@@ -229,7 +230,7 @@ def Classic(inputImage,decodedObjects,X0):
     zbarData = decodedObjects[i].data
     arr = list(map(float, zbarData.split()))
     Data.append([arr[2],arr[3]])
-    polygon = decodedObjects.polygon
+    polygon = decodedObjects[i].polygon
     SIDE_OF_QR = arr[0]
     H_QR = arr[1] - H_CAMERA
 
@@ -253,12 +254,13 @@ def Classic(inputImage,decodedObjects,X0):
     d = distanceCalculate2(data[2], data[3], H_QR,SIDE_OF_QR)
 
     b = mean([a,b,d])
-    Distance.append(b)
-  x = scipy.optimize.leastsq(RP, X0, args=(Data,Distance))[0]
+    Distance.append(b*b)
+  res = scipy.optimize.leastsq(RP, X0, args=(Distance,Data))
+  x = res[0]
 
-  cv2.putText(inputImage, f"X(gl) = {round(x[0], 3)}, Y(gl) = {round(x[0],3)} ", (200, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
+  cv2.putText(inputImage, f"X(gl) = {round(x[0], 3)}, Y(gl) = {round(x[1],3)} ", (320, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
-  return x[0],y[0]
+  return x[0],x[1]
     
 
 while(1):
@@ -285,16 +287,23 @@ while(1):
       elapsed_time_secs = current_time - time_before
       time_before=current_time
 
+      cv2.putText(inputImage, f"Single X = {round(x, 3)}, Y = {round(y,3)} ", (320, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
+       
+
       if len(decodedObjects)>1:
         X0=np.asarray([x,y])
         x_2,y_2=Classic(inputImage,decodedObjects,X0)
-        print(x_2,y_2)
-       
+        supportDF=supportDF.append({'t':index,'x':x_2,'y':y_2},ignore_index=True)
+        
+
+      
       globalDF=globalDF.append({'t':index,'x':x,'y':y},ignore_index=True)
+
 
       index=index+1; 
 
       globalDF.to_csv(REAL_DATA)
+      supportDF.to_csv(SUPPORT_DATA)
 
         #message=str(elapsed_time_secs)+','+str(globalX)+','+str(globalY)
         #если не разделять по потокам, то будет смешение данных
