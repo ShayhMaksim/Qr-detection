@@ -29,7 +29,7 @@ H_CAMERA = 45#1900#45#110#1900
 
 VIDEO_NAME="F3.avi"
 TEST_NAME="test444"
-REAL_DATA="data444"
+REAL_DATA="Exp5"
 
 # сетевое программирование для межпрограммного взаимодействие
 # BIND_IP='127.0.0.1'
@@ -192,9 +192,10 @@ def SingleData(inputImage,decodedObjects,textStep):
         
     b = mean([a,b,d])
     b=b/math.sin(Arg)
-    x = b *math.sin(Arg)  
-    y = b *math.cos(Arg) - (1-math.cos(Arg))*coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)  #math.cos(Arg)
-    y=SMA(y,10)
+    x = b *math.sin(Arg)
+    dY =  coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)/(math.sin(Arg))  #math.cos(Arg)
+    y = b *math.cos(Arg) - dY
+    y=SMA(y,2)
     b = (x**2+y**2)**0.5
     Arg=math.atan2(x,y)
 
@@ -202,7 +203,7 @@ def SingleData(inputImage,decodedObjects,textStep):
     cv2.putText(inputImage, f"X = {round(x, 3)}, Y = {round(y,3)} ", (10, 90+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
     globalX=x*np.cos(np.pi/180*arr[4])-y*np.sin(np.pi/180*arr[4])+arr[2]
-    globalY=-x*np.sin(np.pi/180*arr[4])+y*np.cos(np.pi/180*arr[4])+arr[3]
+    globalY=x*np.sin(np.pi/180*arr[4])+y*np.cos(np.pi/180*arr[4])+arr[3]
     cv2.putText(inputImage, f"X(gl) = {round(globalX, 3)}, Y(gl) = {round(globalY,3)} ", (10, 110+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
     return globalX,globalY
@@ -289,7 +290,7 @@ while(1):
         x_2,y_2=Classic(inputImage,decodedObjects,X0)
         print(x_2,y_2)
        
-      globalDF=globalDF.append({'t':elapsed_time_secs,'x':x,'y':y},ignore_index=True)
+      globalDF=globalDF.append({'t':index,'x':x,'y':y},ignore_index=True)
 
       index=index+1; 
 
