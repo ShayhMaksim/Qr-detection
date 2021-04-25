@@ -2,6 +2,7 @@ from ctypes import string_at
 import numpy as np
 import sys
 import time
+from numpy.core.arrayprint import dtype_is_implied
 from numpy.core.fromnumeric import mean
 from numpy.core.overrides import ArgSpec
 from pandas.core.indexes import base
@@ -211,11 +212,11 @@ def SingleData(inputImage,decodedObjects,textStep):
     y=SMA(y,2)
     Arg=math.atan2(x,y)
     b = (x**2+y**2)**0.5
-    dx=funDeltaX(b,Arg)
-    x = x + dx
+    #dx=funDeltaX(b,Arg)
+    #x = x + dx
 
-    b = (x**2+y**2)**0.5
-    Arg=math.atan2(x,y)
+    #b = (x**2+y**2)**0.5
+    #Arg=math.atan2(x,y)
 
     cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 70+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)     
     cv2.putText(inputImage, f"X = {round(x, 3)}, Y = {round(y,3)} ", (10, 90+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
@@ -305,9 +306,6 @@ def SingleData2(inputImage,decodedObjects,textStep):
 
     cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 70+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)     
     cv2.putText(inputImage, f"X = {round(x, 3)}, Y = {round(y,3)} ", (10, 90+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
-
-    # globalX=x*np.cos(np.pi/180*arr[4])-y*np.sin(np.pi/180*arr[4])+arr[2]
-    # globalY=x*np.sin(np.pi/180*arr[4])+y*np.cos(np.pi/180*arr[4])+arr[3]
     cv2.putText(inputImage, f"X(gl) = {round(x_[0], 3)}, Y(gl) = {round(x_[1],3)} ", (10, 110+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
     return x_[0],x_[1]
@@ -315,7 +313,7 @@ def SingleData2(inputImage,decodedObjects,textStep):
 def Classic(inputImage,decodedObjects,X0):
   Data=[]
   Distance=[]
-
+  dY=[]
   for i in range(0,len(decodedObjects)):
     zbarData = decodedObjects[i].data
     arr = list(map(float, zbarData.split()))
@@ -342,32 +340,27 @@ def Classic(inputImage,decodedObjects,X0):
     a = distanceCalculate2(data[0], data[1], H_QR,SIDE_OF_QR)
     b = distanceCalculate2(centerTop, centerBottom, H_QR,SIDE_OF_QR)
     d = distanceCalculate2(data[2], data[3], H_QR,SIDE_OF_QR)
-    # c = SIDE_OF_QR/2
-
-    # cosA = (a**2 - b**2 - c**2)/(-2*b*c)
-    # cosB = (d**2 - b**2 - c**2)/(-2*b*c)
-    # A = np.arccos(cosA)
-    # B = np.arccos(cosB)
-
-    # Arg=B+(np.pi-A-B)/2
+    
 
     b = mean([a,b,d])
-    
-    # b=b/math.sin(Arg)
-    # x = b *math.sin(Arg)
-    # dY =  coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)/(math.sin(Arg))  #math.cos(Arg)
-    # y = b *math.cos(Arg) - dY
-    # y=SMA(y,2)
-    # b = (x**2+y**2)**0.5
+    #if arr[2]==0 and arr[3]==0:
+    c = SIDE_OF_QR/2
 
-    # X=(centerTop.x+centerBottom.x)/2.
-    # dY=  arr[3]*(X-CX)/CX
+    cosA = (a**2 - b**2 - c**2)/(-2*b*c)
+    cosB = (d**2 - b**2 - c**2)/(-2*b*c)
+    A = np.arccos(cosA)
+    B = np.arccos(cosB)
+
+    Arg=B+(np.pi-A-B)/2
+    dY.append( coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR) )
+
     b = (b*b)
 
     Distance.append(b)
   res = scipy.optimize.leastsq(RP, X0, args=(Distance,Data))
   x = res[0]
-
+  dy=(dY[0]+dY[1])/2
+  x[1]=x[1]-dy
   cv2.putText(inputImage, f"X(gl) = {round(x[0], 3)}, Y(gl) = {round(x[1],3)} ", (320, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
   return x[0],x[1]
