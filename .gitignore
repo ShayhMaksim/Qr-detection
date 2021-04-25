@@ -1,2 +1,6 @@
 *.avi
 ESPCN*.pb
+Exp*
+Data*
+3DPlot*
+Граф*

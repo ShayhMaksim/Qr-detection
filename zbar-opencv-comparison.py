@@ -29,8 +29,8 @@ H_CAMERA = 45#1900#45#110#1900
 
 VIDEO_NAME="F4.avi"
 TEST_NAME="test444"
-REAL_DATA="Exp15"
-SUPPORT_DATA="Exp15_s"
+REAL_DATA="Exp24"
+SUPPORT_DATA="Exp24_s"
 
 # сетевое программирование для межпрограммного взаимодействие
 # BIND_IP='127.0.0.1'
@@ -146,6 +146,12 @@ def SMA(y,count):
     SMA.data.append(y)
     return y
 
+def funDeltaX(D,phi):
+    return 26.98145955-0.08641856*D/np.sin(phi)
+
+def funDeltaY(D,phi):
+    return -0.20324165*D*np.cos(phi)
+
 
 def SingleData(inputImage,decodedObjects,textStep):
     zbarData = decodedObjects.data
@@ -190,13 +196,24 @@ def SingleData(inputImage,decodedObjects,textStep):
 
     Arg=B+(np.pi-A-B)/2
 
+    X=(centerTop.x+centerBottom.x)/2.
         
     b = mean([a,b,d])
     b=b/math.sin(Arg)
-    x = b *math.sin(Arg)
-    dY =  coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)/(math.sin(Arg))  #math.cos(Arg)
+    x = b *math.sin(Arg) 
+
+
+    k=1./math.sin(Arg)
+
+
+    dY =  coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)*k
     y = b *math.cos(Arg) - dY
     y=SMA(y,2)
+    Arg=math.atan2(x,y)
+    b = (x**2+y**2)**0.5
+    dx=funDeltaX(b,Arg)
+    x = x + dx
+
     b = (x**2+y**2)**0.5
     Arg=math.atan2(x,y)
 
@@ -208,6 +225,7 @@ def SingleData(inputImage,decodedObjects,textStep):
     cv2.putText(inputImage, f"X(gl) = {round(globalX, 3)}, Y(gl) = {round(globalY,3)} ", (10, 110+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
     return globalX,globalY
+
 
 def Localization(x,b):
     x, y = x
@@ -221,6 +239,78 @@ def Localization(x,b):
 
 def RP(x,d,b):
     return (Localization(x,b)-d)
+
+
+def SingleData2(inputImage,decodedObjects,textStep):
+    zbarData = decodedObjects.data
+    arr = list(map(float, zbarData.split()))
+    SIDE_OF_QR = arr[0]
+    H_QR = arr[1] - H_CAMERA
+    cv2.putText(inputImage, "ZBAR : {}".format(zbarData), (10, 50+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 1, cv2.LINE_AA)
+    polygon = decodedObjects.polygon
+
+
+    data=polygon[:]
+    if ((polygon[0].y + 30)<(polygon[1].y)):
+      data=polygon[:]
+      key=False
+    else:
+      key=True
+      data[0]=polygon[3]
+      data[1]=polygon[0]
+      data[2]=polygon[1]
+      data[3]=polygon[2]
+
+        
+    centerTop=getCenter(data[0], data[3])
+    centerBottom=getCenter(data[1], data[2])
+
+
+    a = distanceCalculate2(data[0], data[1], H_QR,SIDE_OF_QR)
+    b = distanceCalculate2(centerTop, centerBottom, H_QR,SIDE_OF_QR)
+    c = SIDE_OF_QR/2
+    d = distanceCalculate2(data[2], data[3], H_QR,SIDE_OF_QR)
+    cosA = (a**2 - b**2 - c**2)/(-2*b*c)
+    cosB = (d**2 - b**2 - c**2)/(-2*b*c)
+    A = np.arccos(cosA)
+    B = np.arccos(cosB)
+
+    Arg=B+(np.pi-A-B)/2
+
+        
+    b = mean([a,b,d])
+    b=b/math.sin(Arg)
+    x = b *math.sin(Arg)
+    dY =  coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)/(math.sin(Arg))  #math.cos(Arg)
+    y = b *math.cos(Arg) - dY
+    y=SMA(y,2)
+    b = (x**2+y**2)**0.5
+    Arg=math.atan2(x,y)
+
+    Data=[]
+
+    dX=0*np.cos(np.pi/180*arr[4])-(0-c)*np.sin(np.pi/180*arr[4])+arr[2]
+    dY=0*np.sin(np.pi/180*arr[4])+(0-c)*np.cos(np.pi/180*arr[4])+arr[3]
+    Data.append([arr[2]+dX,arr[3]+dY])
+
+    dX=0*np.cos(np.pi/180*arr[4])-(0+c)*np.sin(np.pi/180*arr[4])+arr[2]
+    dY=0*np.sin(np.pi/180*arr[4])+(0+c)*np.cos(np.pi/180*arr[4])+arr[3]
+    Data.append([arr[2]+dX,arr[3]+dY])
+    
+    X0=np.asarray([x,y])
+    Distance=[a*a,d*d]
+    res = scipy.optimize.leastsq(RP, X0, args=(Distance,Data))
+    x_ = res[0]
+
+
+    cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 70+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)     
+    cv2.putText(inputImage, f"X = {round(x, 3)}, Y = {round(y,3)} ", (10, 90+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
+
+    # globalX=x*np.cos(np.pi/180*arr[4])-y*np.sin(np.pi/180*arr[4])+arr[2]
+    # globalY=x*np.sin(np.pi/180*arr[4])+y*np.cos(np.pi/180*arr[4])+arr[3]
+    cv2.putText(inputImage, f"X(gl) = {round(x_[0], 3)}, Y(gl) = {round(x_[1],3)} ", (10, 110+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
+
+    return x_[0],x_[1]
 
 def Classic(inputImage,decodedObjects,X0):
   Data=[]
@@ -252,9 +342,29 @@ def Classic(inputImage,decodedObjects,X0):
     a = distanceCalculate2(data[0], data[1], H_QR,SIDE_OF_QR)
     b = distanceCalculate2(centerTop, centerBottom, H_QR,SIDE_OF_QR)
     d = distanceCalculate2(data[2], data[3], H_QR,SIDE_OF_QR)
+    # c = SIDE_OF_QR/2
+
+    # cosA = (a**2 - b**2 - c**2)/(-2*b*c)
+    # cosB = (d**2 - b**2 - c**2)/(-2*b*c)
+    # A = np.arccos(cosA)
+    # B = np.arccos(cosB)
+
+    # Arg=B+(np.pi-A-B)/2
 
     b = mean([a,b,d])
-    Distance.append(b*b)
+    
+    # b=b/math.sin(Arg)
+    # x = b *math.sin(Arg)
+    # dY =  coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)/(math.sin(Arg))  #math.cos(Arg)
+    # y = b *math.cos(Arg) - dY
+    # y=SMA(y,2)
+    # b = (x**2+y**2)**0.5
+
+    # X=(centerTop.x+centerBottom.x)/2.
+    # dY=  arr[3]*(X-CX)/CX
+    b = (b*b)
+
+    Distance.append(b)
   res = scipy.optimize.leastsq(RP, X0, args=(Distance,Data))
   x = res[0]
 
