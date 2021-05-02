@@ -190,11 +190,11 @@ def SingleData(inputImage,decodedObjects,textStep):
     b = distanceCalculate2(centerTop, centerBottom, H_QR,SIDE_OF_QR)
     c = SIDE_OF_QR/2
     d = distanceCalculate2(data[2], data[3], H_QR,SIDE_OF_QR)
-    cosA = (a**2 - b**2 - c**2)/(-2*b*c)
+    
+    cosA = (a**2 - b**2 - c**2)/(-2*b*c) # угол
     cosB = (d**2 - b**2 - c**2)/(-2*b*c)
     A = np.arccos(cosA)
     B = np.arccos(cosB)
-
     Arg=B+(np.pi-A-B)/2
 
     X=(centerTop.x+centerBottom.x)/2.
@@ -207,7 +207,7 @@ def SingleData(inputImage,decodedObjects,textStep):
     k=1./math.sin(Arg)
 
 
-    dY =  coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)*k
+    dY =  coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)*k #находим расстояние от центра кадра до центра Qr-кода
     y = b *math.cos(Arg) - dY
     y=SMA(y,2)
     Arg=math.atan2(x,y)
@@ -221,7 +221,7 @@ def SingleData(inputImage,decodedObjects,textStep):
     cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 70+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)     
     cv2.putText(inputImage, f"X = {round(x, 3)}, Y = {round(y,3)} ", (10, 90+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
-    globalX=x*np.cos(np.pi/180*arr[4])-y*np.sin(np.pi/180*arr[4])+arr[2]
+    globalX=x*np.cos(np.pi/180*arr[4])-y*np.sin(np.pi/180*arr[4])+arr[2] # перевод в глоб. ск
     globalY=x*np.sin(np.pi/180*arr[4])+y*np.cos(np.pi/180*arr[4])+arr[3]
     cv2.putText(inputImage, f"X(gl) = {round(globalX, 3)}, Y(gl) = {round(globalY,3)} ", (10, 110+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
@@ -279,7 +279,7 @@ def SingleData2(inputImage,decodedObjects,textStep):
     Arg=B+(np.pi-A-B)/2
 
         
-    b = mean([a,b,d])
+    b = mean([a,b,d]) #дальность
     b=b/math.sin(Arg)
     x = b *math.sin(Arg)
     dY =  coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)/(math.sin(Arg))  #math.cos(Arg)
@@ -291,7 +291,7 @@ def SingleData2(inputImage,decodedObjects,textStep):
     Data=[]
 
     dX=0*np.cos(np.pi/180*arr[4])-(0-c)*np.sin(np.pi/180*arr[4])+arr[2]
-    dY=0*np.sin(np.pi/180*arr[4])+(0-c)*np.cos(np.pi/180*arr[4])+arr[3]
+    dY=0*np.sin(np.pi/180*arr[4])+(0-c)*np.cos(np.pi/180*arr[4])+arr[3] 
     Data.append([arr[2]+dX,arr[3]+dY])
 
     dX=0*np.cos(np.pi/180*arr[4])-(0+c)*np.sin(np.pi/180*arr[4])+arr[2]
@@ -310,7 +310,7 @@ def SingleData2(inputImage,decodedObjects,textStep):
 
     return x_[0],x_[1]
 
-def Classic(inputImage,decodedObjects,X0):
+def Classic(inputImage,decodedObjects,X0): 
   Data=[]
   Distance=[]
   dY=[]
