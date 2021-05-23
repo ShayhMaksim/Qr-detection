@@ -1,15 +1,10 @@
 from ctypes import string_at
 import numpy as np
-import sys
 import time
-from numpy.core.arrayprint import dtype_is_implied
 from numpy.core.fromnumeric import mean
-from numpy.core.overrides import ArgSpec
-from pandas.core.indexes import base
 import pyzbar.pyzbar as pyzbar
 import math
 import cv2
-import copy
 import pandas as pd
 import time
 from main2 import *
@@ -30,6 +25,7 @@ ANGLE_MU=45*math.pi/180
 H_QR = -20 # высота Qr-кода, вшит в Qr-код
 H_CAMERA = 45 # высота камеры в ЛСК
 
+# Данные в Qt коде - [size z x y angle]
 
 VIDEO_NAME="F4.avi" #запись видео
 REAL_DATA="Exp31" #запись информации по одиночному алгоритму
@@ -98,7 +94,7 @@ def distanceCalculate(point1, point2,SIDE_OF_QR):
   Z=FX*SIDE_OF_QR/(Len)
   return Z
 
-# нахождене расстояния до Qr-кода
+# нахождене поправки для расстояния до Qr-кода
 def coordY(point1, point2, X,SIDE_OF_QR):
   Len=((point1.x-point2.x)**2+(point1.y-point2.y)**2)**0.5       
   y=SIDE_OF_QR*(X-CX)/Len
@@ -132,7 +128,6 @@ index=0
 start_time = time.time()
 
 
-# Данные в Qt коде - [size z x y angle]
 
 def SMA(y,count):
   try:
@@ -205,13 +200,14 @@ def SingleData(inputImage,decodedObjects,textStep):
     b=b/math.sin(Arg)
     x = b *math.sin(Arg) 
 
-
     k=1./math.sin(Arg)
 
-
+    #dY - поправка на положении Qr-кода в кадре
     dY =  coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)*k
     y = b *math.cos(Arg) - dY
+    #фильтрация методом скользящего среднего
     y=SMA(y,2)
+    
     Arg=math.atan2(x,y)
     b = (x**2+y**2)**0.5
 
