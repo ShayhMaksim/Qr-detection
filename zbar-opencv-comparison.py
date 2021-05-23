@@ -18,20 +18,22 @@ import threading
 import scipy.optimize 
 
 #FX = 7.2125114092664523e+02
-FX = 7.304041689e+02
+#FX = 7.304041689e+02
 #SIDE_OF_QR = 45
 # ANGLE_FI=24*math.pi/180
 # ANGLE_MU=19*math.pi/180
-ANGLE_FI=45*math.pi/180
+
+#Ниже представлен набор констант"""
+FX = 7.304041689e+02 # фокус для текущей камеры
+ANGLE_FI=45*math.pi/180 
 ANGLE_MU=45*math.pi/180
-H_QR = -20
-H_CAMERA = 45#1900#45#110#1900
+H_QR = -20 # высота Qr-кода, вшит в Qr-код
+H_CAMERA = 45 # высота камеры в ЛСК
 
 
-VIDEO_NAME="F4.avi"
-TEST_NAME="test444"
-REAL_DATA="Exp24"
-SUPPORT_DATA="Exp24_s"
+VIDEO_NAME="F4.avi" #запись видео
+REAL_DATA="Exp31" #запись информации по одиночному алгоритму
+SUPPORT_DATA="Exp31_s" #запись инофрмации по нескольким Qr-кодам
 
 # сетевое программирование для межпрограммного взаимодействие
 # BIND_IP='127.0.0.1'
@@ -212,11 +214,7 @@ def SingleData(inputImage,decodedObjects,textStep):
     y=SMA(y,2)
     Arg=math.atan2(x,y)
     b = (x**2+y**2)**0.5
-    #dx=funDeltaX(b,Arg)
-    #x = x + dx
 
-    #b = (x**2+y**2)**0.5
-    #Arg=math.atan2(x,y)
 
     cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 70+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)     
     cv2.putText(inputImage, f"X = {round(x, 3)}, Y = {round(y,3)} ", (10, 90+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
@@ -240,7 +238,6 @@ def Localization(x,b):
 
 def RP(x,d,b):
     return (Localization(x,b)-d)
-
 
 
 
@@ -270,15 +267,13 @@ def Classic(inputImage,decodedObjects,X0):
     centerTop=getCenter(data[0], data[3])
     centerBottom=getCenter(data[1], data[2])
 
-
     a = distanceCalculate2(data[0], data[1], H_QR,SIDE_OF_QR)
     b = distanceCalculate2(centerTop, centerBottom, H_QR,SIDE_OF_QR)
     d = distanceCalculate2(data[2], data[3], H_QR,SIDE_OF_QR)
     
     b = mean([a,b,d])
-    
-  
-    #dY.append( coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR) )
+     
+    #dY.append( coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR) ) альтернативный метод
 
     dy=coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)
 
@@ -287,87 +282,21 @@ def Classic(inputImage,decodedObjects,X0):
     Distance.append(b)
   res = scipy.optimize.leastsq(RP, X0, args=(Distance,Data))
   x = res[0]
-  #dy=(dY[0]+dY[1])/2
+  #dy=(dY[0]+dY[1])/2 алтернативный метод
   #x[1]=x[1]-dy
   cv2.putText(inputImage, f"X(gl) = {round(x[0], 3)}, Y(gl) = {round(x[1],3)} ", (320, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
 
   return x[0],x[1]
     
-def SingleData2(inputImage,decodedObjects,textStep):
-    zbarData = decodedObjects.data
-    arr = list(map(float, zbarData.split()))
-    SIDE_OF_QR = arr[0]
-    H_QR = arr[1] - H_CAMERA
-    cv2.putText(inputImage, "ZBAR : {}".format(zbarData), (10, 50+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 1, cv2.LINE_AA)
-    polygon = decodedObjects.polygon
-
-
-    data=polygon[:]
-    if ((polygon[0].y + 30)<(polygon[1].y)):
-      data=polygon[:]
-      key=False
-    else:
-      key=True
-      data[0]=polygon[3]
-      data[1]=polygon[0]
-      data[2]=polygon[1]
-      data[3]=polygon[2]
-
-
-    centerTop=getCenter(data[0], data[3])
-    centerBottom=getCenter(data[1], data[2])
-
-
-    a = distanceCalculate2(data[0], data[1], H_QR,SIDE_OF_QR)
-    b = distanceCalculate2(centerTop, centerBottom, H_QR,SIDE_OF_QR)
-    c = SIDE_OF_QR/2
-    d = distanceCalculate2(data[2], data[3], H_QR,SIDE_OF_QR)
-    
-
-    dYb =  coordY(centerTop, centerBottom,(centerTop.x+centerBottom.x)/2.,SIDE_OF_QR)
-    dYa =  coordY(data[0], data[1],(data[0].x+data[1].x)/2.,SIDE_OF_QR)
-    dYd =  coordY(data[2], data[3],(data[2].x+data[3].x)/2.,SIDE_OF_QR)
-    
-
-    Data=[]
-
-    Data.append([0,0])
-    Data.append([0,-c])
-    Data.append([0,c])
-    
-    DA=a*a+dYa*dYa
-    DB=b*b+dYb*dYb
-    DD=d*d+dYd*dYd
-
-
-    X0=np.asarray([b,0])
-    Distance=[DB,DA,DD]
-    res = scipy.optimize.leastsq(RP, X0, args=(Distance,Data))
-    x_ = res[0]
-
-    Arg=math.atan2(x_[0],x_[1])
-    b = (x_[0]**2+x_[1]**2)**0.5
-
-    cv2.putText(inputImage, f"Distance = {round(b,3)}, Alpha = {round(Arg,3)}", (10, 70+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)     
-    cv2.putText(inputImage, f"X = {round(x_[0], 3)}, Y = {round(x_[1],3)} ", (10, 90+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
-
-    globalX=x_[0]*np.cos(np.pi/180*arr[4])+x_[1]*np.sin(np.pi/180*arr[4])+arr[2]
-    globalY=-x_[0]*np.sin(np.pi/180*arr[4])+x_[1]*np.cos(np.pi/180*arr[4])+arr[3]
-    cv2.putText(inputImage, f"X(gl) = {round(globalX, 3)}, Y(gl) = {round(globalY,3)} ", (10, 110+textStep), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
-
-    return globalX,globalY
-
 
 while(1):
     hasFrame, inputImage = cap.read()
     inputImage = cv2.cvtColor(inputImage, cv2.COLOR_BGR2GRAY)#cv2.COLOR_BGR2GRAY
-    
-    
+       
     if not hasFrame:
         break
     decodedObjects = pyzbar.decode(inputImage)
-
-    
+  
     if len(decodedObjects):
       x=0
       y=0
@@ -384,17 +313,12 @@ while(1):
 
       cv2.putText(inputImage, f"Single X = {round(x, 3)}, Y = {round(y,3)} ", (320, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2, cv2.LINE_AA)
        
-
       if len(decodedObjects)>1:
         X0=np.asarray([x,y])
         x_2,y_2=Classic(inputImage,decodedObjects,X0)
         supportDF=supportDF.append({'t':index,'x':x_2,'y':y_2},ignore_index=True)
-        
-
-      
+              
       globalDF=globalDF.append({'t':index,'x':x,'y':y},ignore_index=True)
-
-
       index=index+1; 
 
       globalDF.to_csv(REAL_DATA)
